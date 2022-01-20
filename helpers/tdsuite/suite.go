@@ -245,12 +245,16 @@ func Run(tb testing.TB, suite interface{}, config ...td.ContextConfig) bool {
 func run(t *td.T, suite interface{}, methods []int) {
 	t.Helper()
 
+	suiteType := reflect.TypeOf(suite)
+
 	// setup
 	if s, ok := suite.(Setup); ok {
 		if err := s.Setup(t); err != nil {
 			t.Errorf("%T suite setup error: %s", suite, err)
 			return
 		}
+	} else if _, exists := suiteType.MethodByName("Setup"); exists {
+		t.Errorf("%T suite has a Setup method but it does not match Setup(t *td.T) error", suite)
 	}
 	defer func() {
 		// destroy
